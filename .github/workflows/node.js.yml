@@ -1,0 +1,28 @@
+# This workflow will
+name: Node.js CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x, 22.x]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+      - run: node --check server.js
+      - name: Smoke test
+        run: |
+          PORT=8137 node server.js &
+          sleep 2
+          curl -fsS localhost:8137/api/config
+          curl -fsS localhost:8137/ -o /dev/null
